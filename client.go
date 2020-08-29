@@ -16,7 +16,14 @@ type Client struct {
 }
 
 // NewClient creates a new instance of a Client.
-func NewClient(baseURL string, limitTimeout time.Duration, clientTimeout time.Duration) *Client {
+// baseURL is optional and can be used to override default baseURL
+func NewClient(baseURL *string, limitTimeout time.Duration, clientTimeout time.Duration) *Client {
+
+	// If baseURL is not provided, fall back to using the configured default
+	if baseURL == nil{
+		baseURL = &Cfg.BaseURL
+	}
+
 	exp := retry.Exponential{
 		Initial: 10 * time.Millisecond,
 		Factor:  1.5,
@@ -25,7 +32,7 @@ func NewClient(baseURL string, limitTimeout time.Duration, clientTimeout time.Du
 	strategy := retry.LimitTime(limitTimeout, exp)
 
 	return &Client{
-		BaseURL: baseURL,
+		BaseURL: *baseURL,
 		HTTPClient: &http.Client{
 			Timeout: clientTimeout,
 		},

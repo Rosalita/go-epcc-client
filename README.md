@@ -1,7 +1,7 @@
 # go-epcc-client
 A simple API client built in Go to interact with EPCC endpoints.
 
-This project was created as a learning activity while onboarding.
+This project was created as a learning activity.
 
 # Setup
 ## Create the following environment variables
@@ -10,6 +10,6 @@ This project was created as a learning activity while onboarding.
 
 Both these values can be found on the home page of your store dashboard.
 Add them to .zshrc or .bashrc
-  `export GO_EPCC_CLIENT_ID=XXX`
-  `export GO_EPCC_CLIENT_SECRET=YYY`
+`export GO_EPCC_CLIENT_ID=XXX`
+`export GO_EPCC_CLIENT_SECRET=YYY`
 

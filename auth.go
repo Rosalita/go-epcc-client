@@ -3,12 +3,11 @@ package epcc
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
-	"errors"
 )
 
 type authResponse struct {
@@ -19,17 +18,16 @@ type authResponse struct {
 	AccessToken string `json:"access_token"`
 }
 
-
-
 //Auth returns an AccessToken or an Error
-func Auth(client Client)(string, error) {
+func Auth(client Client) (string, error) {
 
-	// TODO check env vars aren't nil
 	reqURL, err := url.Parse(client.BaseURL)
 
+	reqURL.Path = fmt.Sprintf("/oauth/access_token")
+
 	values := url.Values{}
-	values.Set("client_id", os.Getenv("GO_EPCC_CLIENT_ID"))
-	values.Set("client_secret", os.Getenv("GO_EPCC_CLIENT_SECRET"))
+	values.Set("client_id", Cfg.Credentials.ClientID)
+	values.Set("client_secret", Cfg.Credentials.ClientSecret)
 	values.Set("grant_type", "client_credentials")
 
 	body := strings.NewReader(values.Encode())
@@ -47,12 +45,12 @@ func Auth(client Client)(string, error) {
 		return "", err
 	}
 
+	if res.StatusCode != 200 {
+		return "", fmt.Errorf("error: unexpected status %s", res.Status)
+	}
+
 	var buffer bytes.Buffer
 	buffer.ReadFrom(res.Body)
-
-	if buffer.String() == ""{
-		return "", errors.New("authentication error")
-	}
 
 	var authResponse authResponse
 	if err := json.Unmarshal(buffer.Bytes(), &authResponse); err != nil {
