@@ -40,17 +40,18 @@ func Auth(client Client) (string, error) {
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
-	res, err := client.HTTPClient.Do(req)
+	resp, err := client.HTTPClient.Do(req)
 	if err != nil {
 		return "", err
 	}
 
-	if res.StatusCode != 200 {
-		return "", fmt.Errorf("error: unexpected status %s", res.Status)
+	if resp.StatusCode != 200 {
+		return "", fmt.Errorf("error: unexpected status %s", resp.Status)
 	}
 
 	var buffer bytes.Buffer
-	buffer.ReadFrom(res.Body)
+	buffer.ReadFrom(resp.Body)
+	defer resp.Body.Close()
 
 	var authResponse authResponse
 	if err := json.Unmarshal(buffer.Bytes(), &authResponse); err != nil {
