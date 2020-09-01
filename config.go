@@ -3,6 +3,7 @@ package epcc
 import (
 	"log"
 	"time"
+	"os"
 
 	"github.com/kelseyhightower/envconfig"
 )
@@ -18,13 +19,20 @@ func init() {
 	cfg.ClientTimeout = 10 * time.Second
 	cfg.RetryLimitTimeout = 30 * time.Second
 
-	// process environment variables and store them in the global cfg.
+
+	// If the package is being tested, ignore environment variables.
+	if len(os.Args) > 1 && os.Args[1][:5] == "-test" {
+		log.Println("Package initialised in testing mode.")
+		log.Println("Environment variables will be ignored.")
+		return
+	}
+
+	// Otherwise, process environment variables and store them in the global cfg.
 	err := envconfig.Process("", &cfg)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 
-	// is the next line needed will a missing env var catch this?
 	if cfg.Credentials.ClientID == "" {
 		log.Fatal("Required environment variable GO_EPCC_CLIENT_ID not found")
 	}
