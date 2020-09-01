@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/moltin/go-epcc-client"
+	"github.com/Rosalita/go-epcc-client"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -119,10 +119,12 @@ func TestCurrenciesGetAll(t *testing.T) {
 
 	// Create a new client and configure it to use test server instead of the real API endpoint.
 	testServer := httptest.NewServer(http.HandlerFunc(fakeHandleCurrenciesGetAll))
-
-	limitTimeout := 10 * time.Millisecond
-	clientTimeout := 10 * time.Second
-	client := epcc.NewClient(&testServer.URL, limitTimeout, clientTimeout)
+	options := epcc.ClientOptions{
+		BaseURL:           testServer.URL,
+		ClientTimeout:     10 * time.Second,
+		RetryLimitTimeout: 10 * time.Millisecond,
+	}
+	client := epcc.NewClient(options)
 
 	for _, test := range tests {
 		currenciesData, err := epcc.Currencies.GetAll(client)

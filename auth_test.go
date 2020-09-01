@@ -1,4 +1,4 @@
-package epcc_test
+package epcc
 
 import (
 	"bytes"
@@ -8,7 +8,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/moltin/go-epcc-client"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -40,6 +39,15 @@ func fakeHandleAuth(rw http.ResponseWriter, req *http.Request) {
 
 func TestAuth(t *testing.T) {
 
+	// Create a new client and configure it to use test server instead of the real API endpoint.
+	testServer := httptest.NewServer(http.HandlerFunc(fakeHandleAuth))
+	options := ClientOptions{
+		BaseURL: testServer.URL,
+		ClientTimeout: 10 * time.Second,
+		RetryLimitTimeout: 10 * time.Millisecond,
+	}
+	client := NewClient(options)
+
 	tests := []struct {
 		clientID      string
 		clientSecret  string
@@ -50,18 +58,12 @@ func TestAuth(t *testing.T) {
 		{"invalidClientID", "invalidClientSecret", "", errors.New("error: unexpected status 403 Forbidden")},
 	}
 
-	// Create a new client and configure it to use test server instead of the real API endpoint.
-	testServer := httptest.NewServer(http.HandlerFunc(fakeHandleAuth))
-	limitTimeout := 10 * time.Millisecond
-	clientTimeout := 10 * time.Second
-	client := epcc.NewClient(&testServer.URL, limitTimeout, clientTimeout)
-
 	for _, test := range tests {
 
-		epcc.Cfg.Credentials.ClientID = test.clientID
-		epcc.Cfg.Credentials.ClientSecret = test.clientSecret
+		cfg.Credentials.ClientID = test.clientID
+		cfg.Credentials.ClientSecret = test.clientSecret
 
-		token, err := epcc.Auth(*client)
+		token, err := auth(*client)
 		assert.Equal(t, test.expectedToken, token)
 		assert.Equal(t, test.err, err)
 	}

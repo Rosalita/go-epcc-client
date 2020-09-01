@@ -18,16 +18,16 @@ type authResponse struct {
 	AccessToken string `json:"access_token"`
 }
 
-//Auth returns an AccessToken or an Error
-func Auth(client Client) (string, error) {
+//auth returns an AccessToken or an Error
+func auth(client Client) (string, error) {
 
 	reqURL, err := url.Parse(client.BaseURL)
 
 	reqURL.Path = fmt.Sprintf("/oauth/access_token")
 
 	values := url.Values{}
-	values.Set("client_id", Cfg.Credentials.ClientID)
-	values.Set("client_secret", Cfg.Credentials.ClientSecret)
+	values.Set("client_id", cfg.Credentials.ClientID)
+	values.Set("client_secret", cfg.Credentials.ClientSecret)
 	values.Set("grant_type", "client_credentials")
 
 	body := strings.NewReader(values.Encode())

@@ -2,25 +2,33 @@ package epcc
 
 import (
 	"log"
+	"time"
 
 	"github.com/kelseyhightower/envconfig"
 )
 
-// Cfg holds the current configuration.
-var Cfg Config
+// cfg holds the current configuration.
+var cfg Config
 
 // initialisation for the epcc package
 func init() {
-	// environment variables are processed using envconfig and stored in the global cfg.
-	err := envconfig.Process("", &Cfg)
+
+	// Set default configuration values. 
+	cfg.BaseURL = "https://api.moltin.com/"
+	cfg.ClientTimeout = 10 * time.Second
+	cfg.RetryLimitTimeout = 30 * time.Second
+
+	// process environment variables and store them in the global cfg.
+	err := envconfig.Process("", &cfg)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 
-	if Cfg.Credentials.ClientID == "" {
+	// is the next line needed will a missing env var catch this?
+	if cfg.Credentials.ClientID == "" {
 		log.Fatal("Required environment variable GO_EPCC_CLIENT_ID not found")
 	}
-	if Cfg.Credentials.ClientSecret == "" {
+	if cfg.Credentials.ClientSecret == "" {
 		log.Fatal("Required environment variable GO_EPCC_CLIENT_SECRET not found")
 	}
 }
@@ -33,5 +41,7 @@ type Config struct {
 		ClientID     string `envconfig:"GO_EPCC_CLIENT_ID"`
 		ClientSecret string `envconfig:"GO_EPCC_CLIENT_SECRET"`
 	}
-	BaseURL string `default:"https://api.moltin.com/"`
+		BaseURL string
+		ClientTimeout time.Duration
+		RetryLimitTimeout time.Duration
 }
