@@ -5,6 +5,11 @@ type CurrenciesData struct {
 	Data []Currency `json:"data"`
 }
 
+// CurrencyData contains the data for a single currency
+type CurrencyData struct {
+	Data Currency `json:"data"`
+}
+
 // Currency contains the data for a currency
 type Currency struct {
 	ID                string       `json:"id,omitempty"`
@@ -17,7 +22,7 @@ type Currency struct {
 	DecimalPlaces     int64        `json:"decimal_places"`
 	Default           bool         `json:"default"`
 	Enabled           bool         `json:"enabled"`
-	Links             Links        `json:"links"`
+	Links             Links        `json:"links,omitempty"`
 	Meta              CurrencyMeta `json:"meta,omitempty"`
 }
 

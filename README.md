@@ -26,6 +26,23 @@ Make a request to get all currencies
 currencies, err := epcc.Currencies.GetAll(client)
 ```
 
+Make a request to create a new currency
+```go
+	newCurrency := epcc.Currency{
+		Type: "currency",
+		Code: "INR",
+		ExchangeRate: 142.15,
+		Format: "₹{price}",
+		DecimalPoint: ".",
+		ThousandSeparator: ",",
+		DecimalPlaces: 2,
+		Default: false,
+		Enabled: true,
+	}
+
+	result, err := epcc.Currencies.Create(client, &newCurrency)
+```
+
 To configure a custom client
 ```go
 clientOptions := epcc.ClientOptions{

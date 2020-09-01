@@ -98,9 +98,11 @@ func (c *Client) DoRequest(method string, path string, payload io.Reader) (body 
 	}
 
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", c.accessToken))
+	req.Header.Add("Content-Type", "application/json")
 
 	for r := retry.Start(c.RetryStrategy, nil); r.Next(); {
 		resp, err := c.HTTPClient.Do(req)
+
 		if err != nil {
 			return nil, err
 		}
