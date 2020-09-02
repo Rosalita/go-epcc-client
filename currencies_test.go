@@ -2,6 +2,7 @@ package epcc_test
 
 import (
 	"bytes"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -146,7 +147,6 @@ func fakeHandleCurrenciesCreate(rw http.ResponseWriter, req *http.Request) {
 
 	switch {
 	case req.URL.String() == "/v2/currencies" && req.Method == "POST" && strings.Contains(buffer.String(), `"code":"INR"`):
-
 		responseJSON := `{` +
 			`"data":` +
 			`{` +
@@ -172,6 +172,17 @@ func fakeHandleCurrenciesCreate(rw http.ResponseWriter, req *http.Request) {
 
 		rw.WriteHeader(201)
 		rw.Write([]byte(responseJSON))
+
+	case req.URL.String() == "/v2/currencies" && req.Method == "POST" && strings.Contains(buffer.String(), `"code":"EUR"`):
+		responseJSON := `{` +
+			`"errors":[{` +
+			`"status":400,` +
+			`"title":"Currency already exists",` +
+			`"detail":"The specified currency code already exists for this store"` +
+			`}]}`
+		rw.WriteHeader(400)
+		rw.Write([]byte(responseJSON))
+
 	default:
 		rw.WriteHeader(500)
 	}
@@ -179,11 +190,23 @@ func fakeHandleCurrenciesCreate(rw http.ResponseWriter, req *http.Request) {
 
 func TestCurrenciesCreate(t *testing.T) {
 
-	newCurrency := epcc.Currency{
+	validNewCurrency := epcc.Currency{
 		Type:              "currency",
 		Code:              "INR",
 		ExchangeRate:      142.15,
 		Format:            "₹{price}",
+		DecimalPoint:      ".",
+		ThousandSeparator: ",",
+		DecimalPlaces:     2,
+		Default:           false,
+		Enabled:           true,
+	}
+
+	currencyAlreadyExists := epcc.Currency{
+		Type:              "currency",
+		Code:              "EUR",
+		ExchangeRate:      1.13,
+		Format:            "€{price}",
 		DecimalPoint:      ".",
 		ThousandSeparator: ",",
 		DecimalPlaces:     2,
@@ -216,11 +239,12 @@ func TestCurrenciesCreate(t *testing.T) {
 	}
 
 	tests := []struct {
-		currency       epcc.Currency
-		currenciesData epcc.CurrencyData
-		err            error
+		currency     epcc.Currency
+		currencyData *epcc.CurrencyData
+		err          error
 	}{
-		{newCurrency, expectedCurrencyData, nil},
+		{validNewCurrency, &expectedCurrencyData, nil},
+		{currencyAlreadyExists, nil, errors.New("status code 400 is not ok")},
 	}
 
 	// Create a new client and configure it to use test server instead of the real API endpoint.
@@ -233,8 +257,10 @@ func TestCurrenciesCreate(t *testing.T) {
 	client := epcc.NewClient(options)
 
 	for _, test := range tests {
-		currenciesData, err := epcc.Currencies.Create(client, &newCurrency)
-		assert.Equal(t, test.currenciesData, *currenciesData)
+		currencyData, err := epcc.Currencies.Create(client, &test.currency)
+		if currencyData != nil {
+			assert.Equal(t, test.currencyData, currencyData)
+		}
 		assert.Equal(t, test.err, err)
 	}
 }

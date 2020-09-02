@@ -1,16 +1,16 @@
 package epcc
 
-// CurrenciesData contains the data for currencies
-type CurrenciesData struct {
-	Data []Currency `json:"data"`
-}
-
 // CurrencyData contains the data for a single currency
 type CurrencyData struct {
 	Data Currency `json:"data"`
 }
 
-// Currency contains the data for a currency
+// CurrenciesData contains the data for multiple currencies
+type CurrenciesData struct {
+	Data []Currency `json:"data"`
+}
+
+// Currency represents a currency
 type Currency struct {
 	ID                string       `json:"id,omitempty"`
 	Type              string       `json:"type"`

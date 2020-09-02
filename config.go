@@ -2,8 +2,8 @@ package epcc
 
 import (
 	"log"
-	"time"
 	"os"
+	"time"
 
 	"github.com/kelseyhightower/envconfig"
 )
@@ -14,11 +14,10 @@ var cfg Config
 // initialisation for the epcc package
 func init() {
 
-	// Set default configuration values. 
+	// Set default configuration values.
 	cfg.BaseURL = "https://api.moltin.com/"
 	cfg.ClientTimeout = 10 * time.Second
 	cfg.RetryLimitTimeout = 30 * time.Second
-
 
 	// If the package is being tested, ignore environment variables.
 	if len(os.Args) > 1 && os.Args[1][:5] == "-test" {
@@ -49,7 +48,7 @@ type Config struct {
 		ClientID     string `envconfig:"GO_EPCC_CLIENT_ID"`
 		ClientSecret string `envconfig:"GO_EPCC_CLIENT_SECRET"`
 	}
-		BaseURL string
-		ClientTimeout time.Duration
-		RetryLimitTimeout time.Duration
+	BaseURL           string
+	ClientTimeout     time.Duration
+	RetryLimitTimeout time.Duration
 }

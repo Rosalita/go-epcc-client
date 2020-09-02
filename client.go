@@ -115,17 +115,24 @@ func (c *Client) DoRequest(method string, path string, payload io.Reader) (body 
 
 		case 200, 201:
 			var buffer bytes.Buffer
-			_, err := buffer.ReadFrom(resp.Body)
-			if err != nil {
+			if _, err := buffer.ReadFrom(resp.Body); err != nil {
 				return nil, err
 			}
+
 			return buffer.Bytes(), nil
 
 		case 204:
 			return nil, nil
 
 		default:
-			err = errors.New("status code not ok")
+			var buffer bytes.Buffer
+			if _, err := buffer.ReadFrom(resp.Body); err != nil {
+				return nil, err
+			}
+
+			log.Printf("response: %s", buffer.String())
+			err := fmt.Errorf("status code %d is not ok", resp.StatusCode)
+
 			return nil, err
 		}
 	}

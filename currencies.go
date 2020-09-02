@@ -1,9 +1,9 @@
 package epcc
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
-	"bytes"
 )
 
 // Currencies is used to access the Currencies endpoints.
@@ -30,7 +30,7 @@ func (currencies) GetAll(client *Client) (*CurrenciesData, error) {
 }
 
 // Create creates a currency
-func(currencies)Create(client *Client, currency *Currency)(*CurrencyData, error){
+func (currencies) Create(client *Client, currency *Currency) (*CurrencyData, error) {
 
 	currencyData := CurrencyData{
 		Data: *currency,
@@ -44,6 +44,7 @@ func(currencies)Create(client *Client, currency *Currency)(*CurrencyData, error)
 	path := fmt.Sprintf("/v2/currencies")
 
 	body, err := client.DoRequest("POST", path, bytes.NewBuffer(jsonPayload))
+
 	if err != nil {
 		return nil, err
 	}

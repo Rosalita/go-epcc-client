@@ -10,20 +10,20 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestNewClient(t *testing.T){
+func TestNewClient(t *testing.T) {
 	client := NewClient()
 	assert.Equal(t, "https://api.moltin.com/", client.BaseURL)
-	assert.Equal(t, time.Duration(10 * time.Second), client.HTTPClient.Timeout)
+	assert.Equal(t, time.Duration(10*time.Second), client.HTTPClient.Timeout)
 }
 
 func TestAuthenticate(t *testing.T) {
 
-		testServer := httptest.NewServer(http.HandlerFunc(fakeHandleAuth))
-		options := ClientOptions{
-			BaseURL: testServer.URL,
-			ClientTimeout: 10 * time.Second,
-			RetryLimitTimeout: 10 * time.Millisecond,
-		}
+	testServer := httptest.NewServer(http.HandlerFunc(fakeHandleAuth))
+	options := ClientOptions{
+		BaseURL:           testServer.URL,
+		ClientTimeout:     10 * time.Second,
+		RetryLimitTimeout: 10 * time.Millisecond,
+	}
 
 	tests := []struct {
 		clientID            string
@@ -47,4 +47,3 @@ func TestAuthenticate(t *testing.T) {
 		assert.Equal(t, test.err, err)
 	}
 }
-

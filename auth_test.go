@@ -42,8 +42,8 @@ func TestAuth(t *testing.T) {
 	// Create a new client and configure it to use test server instead of the real API endpoint.
 	testServer := httptest.NewServer(http.HandlerFunc(fakeHandleAuth))
 	options := ClientOptions{
-		BaseURL: testServer.URL,
-		ClientTimeout: 10 * time.Second,
+		BaseURL:           testServer.URL,
+		ClientTimeout:     10 * time.Second,
 		RetryLimitTimeout: 10 * time.Millisecond,
 	}
 	client := NewClient(options)
