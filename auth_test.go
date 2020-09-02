@@ -21,13 +21,13 @@ func fakeHandleAuth(rw http.ResponseWriter, req *http.Request) {
 
 	switch {
 	case req.URL.String() == "/oauth/access_token" && req.Method == "POST" && buffer.String() == "client_id=validClientID&client_secret=validClientSecret&grant_type=client_credentials":
-		responseJSON := `{` +
-			`"expires":1598636721,` +
-			`"access_token":"f64e7f07b10f710a15e4f41d670f0d7d7d4e415d",` +
-			`"identifier":"client_credentials",` +
-			`"expires_in":3600,` +
-			`"token_type":"Bearer"` +
-			`}`
+		responseJSON := `{
+			"expires":1598636721,
+			"access_token":"f64e7f07b10f710a15e4f41d670f0d7d7d4e415d",
+			"identifier":"client_credentials",
+			"expires_in":3600,
+			"token_type":"Bearer"
+		}`
 		rw.WriteHeader(200)
 		rw.Write([]byte(responseJSON))
 	case req.URL.String() == "/oauth/access_token" && req.Method == "POST" && buffer.String() == "client_id=invalidClientID&client_secret=invalidClientSecret&grant_type=client_credentials":
@@ -53,12 +53,19 @@ func TestAuth(t *testing.T) {
 		expectedToken string
 		err           error
 	}{
-		{"validClientID", "validClientSecret", "f64e7f07b10f710a15e4f41d670f0d7d7d4e415d", nil},
-		{"invalidClientID", "invalidClientSecret", "", errors.New("error: unexpected status 403 Forbidden")},
+		{
+			clientID:      "validClientID",
+			clientSecret:  "validClientSecret",
+			expectedToken: "f64e7f07b10f710a15e4f41d670f0d7d7d4e415d",
+		},
+		{
+			clientID:     "invalidClientID",
+			clientSecret: "invalidClientSecret",
+			err:          errors.New("error: unexpected status 403 Forbidden"),
+		},
 	}
 
 	for _, test := range tests {
-
 		cfg.Credentials.ClientID = test.clientID
 		cfg.Credentials.ClientSecret = test.clientSecret
 

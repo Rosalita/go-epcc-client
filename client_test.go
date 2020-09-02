@@ -30,12 +30,18 @@ func TestAuthenticate(t *testing.T) {
 		expectedAccessToken string
 		err                 error
 	}{
-		{"validClientID", "validClientSecret", "f64e7f07b10f710a15e4f41d670f0d7d7d4e415d", nil},
-		{"invalidClientID", "invalidClientSecret", "", errors.New("error: unexpected status 403 Forbidden")},
+		{
+			clientID:            "validClientID",
+			clientSecret:        "validClientSecret",
+			expectedAccessToken: "f64e7f07b10f710a15e4f41d670f0d7d7d4e415d"},
+		{
+			clientID:     "invalidClientID",
+			clientSecret: "invalidClientSecret",
+			err:          errors.New("error: unexpected status 403 Forbidden"),
+		},
 	}
 
 	for _, test := range tests {
-
 		cfg.Credentials.ClientID = test.clientID
 		cfg.Credentials.ClientSecret = test.clientSecret
 
