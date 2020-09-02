@@ -14,14 +14,14 @@ type CurrenciesData struct {
 type Currency struct {
 	ID                string       `json:"id,omitempty"`
 	Type              string       `json:"type"`
-	Code              string       `json:"code"`
-	ExchangeRate      float64      `json:"exchange_rate"`
-	Format            string       `json:"format"`
-	DecimalPoint      string       `json:"decimal_point"`
-	ThousandSeparator string       `json:"thousand_separator"`
-	DecimalPlaces     int64        `json:"decimal_places"`
-	Default           bool         `json:"default"`
-	Enabled           bool         `json:"enabled"`
+	Code              string       `json:"code,omitempty"`
+	ExchangeRate      float64      `json:"exchange_rate,omitempty"`
+	Format            string       `json:"format,omitempty"`
+	DecimalPoint      string       `json:"decimal_point,omitempty"`
+	ThousandSeparator string       `json:"thousand_separator,omitempty"`
+	DecimalPlaces     int64        `json:"decimal_places,omitempty"`
+	Default           bool         `json:"default,omitempty"`
+	Enabled           bool         `json:"enabled,omitempty"`
 	Links             Links        `json:"links,omitempty"`
 	Meta              CurrencyMeta `json:"meta,omitempty"`
 }

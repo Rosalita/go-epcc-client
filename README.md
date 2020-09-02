@@ -21,6 +21,11 @@ client := epcc.NewClient()
 client.Authenticate()
 ```
 
+Make a request to get a single currency
+```go
+currency, err := epcc.Currencies.Get(client, "3563bde2-fb72-4721-8584-504058f63780")
+```
+
 Make a request to get all currencies
 ```go
 currencies, err := epcc.Currencies.GetAll(client)
@@ -41,6 +46,16 @@ newCurrency := epcc.Currency{
 }
 
 result, err := epcc.Currencies.Create(client, &newCurrency)
+```
+
+Make a request to update a currency
+```go
+update := epcc.Currency{
+	Type:              "currency",
+	ExchangeRate:      1.14,
+}
+
+result, err := epcc.Currencies.Update(client, "3563bde2-fb72-4721-8584-504058f63780", &update)
 ```
 
 Make a request to delete a currency

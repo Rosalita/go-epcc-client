@@ -13,6 +13,89 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func fakeHandleCurrenciesGet(rw http.ResponseWriter, req *http.Request) {
+	switch {
+	case req.URL.String() == "/v2/currencies/validCurrencyID" && req.Method == "GET":
+		responseJSON := `{
+			"data":{
+				"id":"3563bde2-fb72-4721-8584-504058f63780",
+				"type":"currency",
+				"code":"GBP",
+				"exchange_rate":1.33,
+				"format":"£{price}",
+				"decimal_point":".",
+				"thousand_separator":",",
+				"decimal_places":2,
+				"default":true,
+				"enabled":true,
+				"links":{
+					"self":"https://api.moltin.com/currencies/9ea32a77-982b-41fd-873c-62570bbfc1e0"
+				},
+				"meta":{
+					"timestamps":{
+						"created_at":"2020-08-28T09:56:36.852Z",
+						"updated_at":"2020-08-28T09:56:36.852Z"
+					}
+				}
+			}
+		}`
+
+		rw.WriteHeader(200)
+		rw.Write([]byte(responseJSON))
+	default:
+		rw.WriteHeader(500)
+	}
+}
+
+func TestCurrenciesGet(t *testing.T) {
+	expectedCurrencyData := epcc.CurrencyData{
+		Data: epcc.Currency{
+			ID:                "3563bde2-fb72-4721-8584-504058f63780",
+			Type:              "currency",
+			Code:              "GBP",
+			ExchangeRate:      1.33,
+			Format:            "£{price}",
+			DecimalPoint:      ".",
+			ThousandSeparator: ",",
+			DecimalPlaces:     2,
+			Default:           true,
+			Enabled:           true,
+			Links: epcc.Links{
+				Self: "https://api.moltin.com/currencies/9ea32a77-982b-41fd-873c-62570bbfc1e0",
+			},
+			Meta: epcc.CurrencyMeta{
+				Timestamps: epcc.Timestamps{
+					CreatedAt: "2020-08-28T09:56:36.852Z",
+					UpdatedAt: "2020-08-28T09:56:36.852Z",
+				},
+			},
+		},
+	}
+
+	tests := []struct {
+		currencyID   string
+		currencyData epcc.CurrencyData
+		err          error
+	}{
+		{"validCurrencyID", expectedCurrencyData, nil},
+	}
+
+	// Create a new client and configure it to use test server instead of the real API endpoint.
+	testServer := httptest.NewServer(http.HandlerFunc(fakeHandleCurrenciesGet))
+	options := epcc.ClientOptions{
+		BaseURL:           testServer.URL,
+		ClientTimeout:     10 * time.Second,
+		RetryLimitTimeout: 10 * time.Millisecond,
+	}
+	client := epcc.NewClient(options)
+
+	for _, test := range tests {
+		currencyData, err := epcc.Currencies.Get(client, test.currencyID)
+		assert.Equal(t, test.currencyData, *currencyData)
+		assert.Equal(t, test.err, err)
+	}
+}
+
 func fakeHandleCurrenciesGetAll(rw http.ResponseWriter, req *http.Request) {
 	switch {
 	case req.URL.String() == "/v2/currencies" && req.Method == "GET":
@@ -119,9 +202,7 @@ func TestCurrenciesGetAll(t *testing.T) {
 		currenciesData epcc.CurrenciesData
 		err            error
 	}{
-		{
-			currenciesData: expectedCurrencies,
-		},
+		{expectedCurrencies, nil},
 	}
 
 	// Create a new client and configure it to use test server instead of the real API endpoint.
@@ -322,6 +403,167 @@ func TestCurrenciesDelete(t *testing.T) {
 
 	for _, test := range tests {
 		err := epcc.Currencies.Delete(client, test.currencyID)
+		assert.Equal(t, test.err, err)
+	}
+}
+
+func fakeHandleCurrenciesUpdate(rw http.ResponseWriter, req *http.Request) {
+	var buffer bytes.Buffer
+	_, err := buffer.ReadFrom(req.Body)
+	if err != nil {
+		rw.WriteHeader(500)
+		return
+	}
+
+	switch {
+	case req.URL.String() == "/v2/currencies/largeUpdate" && req.Method == "PUT" && strings.Contains(buffer.String(), `"exchange_rate":1.13`):
+		responseJSON := `{
+			"data": {
+				"id":"3563bde2-fb72-4721-8584-504058f63780",
+				"type":"currency",
+				"code":"EUR",
+				"exchange_rate":1.13,
+				"format":"€{price}",
+				"decimal_point":".",
+				"thousand_separator":",",
+				"decimal_places":2,
+				"default":false,
+				"enabled":true,
+				"links":{
+					"self":"https://api.moltin.com/currencies/3563bde2-fb72-4721-8584-504058f63780"
+				},
+				"meta":{
+					"timestamps":{
+						"created_at":"2020-09-01T15:39:18.273Z",
+						"updated_at":"2020-09-02T14:38:03.120282079Z"
+					}
+				}
+			}
+		}`
+		rw.WriteHeader(200)
+		rw.Write([]byte(responseJSON))
+	case req.URL.String() == "/v2/currencies/smallUpdate" && req.Method == "PUT" && strings.Contains(buffer.String(), `"exchange_rate":1.14`):
+		responseJSON := `{
+			"data": {
+				"id":"3563bde2-fb72-4721-8584-504058f63780",
+				"type":"currency",
+				"code":"EUR",
+				"exchange_rate":1.14,
+				"format":"€{price}",
+				"decimal_point":".",
+				"thousand_separator":",",
+				"decimal_places":2,
+				"default":false,
+				"enabled":true,
+				"links":{
+					"self":"https://api.moltin.com/currencies/3563bde2-fb72-4721-8584-504058f63780"
+				},
+				"meta":{
+					"timestamps":{
+						"created_at":"2020-09-01T15:39:18.273Z",
+						"updated_at":"2020-09-02T14:38:03.120282079Z"
+					}
+				}
+			}
+		}`
+		rw.WriteHeader(200)
+		rw.Write([]byte(responseJSON))
+
+	default:
+		rw.WriteHeader(500)
+	}
+}
+
+func TestCurrenciesUpdate(t *testing.T) {
+	largeUpdate := epcc.Currency{
+		Type:              "currency",
+		Code:              "EUR",
+		ExchangeRate:      1.13,
+		Format:            "€{price}",
+		DecimalPoint:      ".",
+		ThousandSeparator: ",",
+		DecimalPlaces:     2,
+		Default:           false,
+		Enabled:           true,
+	}
+
+	expectedLargeUpdateCurrencyData := epcc.CurrencyData{
+		Data: epcc.Currency{
+			ID:                "3563bde2-fb72-4721-8584-504058f63780",
+			Type:              "currency",
+			Code:              "EUR",
+			ExchangeRate:      1.13,
+			Format:            "€{price}",
+			DecimalPoint:      ".",
+			ThousandSeparator: ",",
+			DecimalPlaces:     2,
+			Default:           false,
+			Enabled:           true,
+			Links: epcc.Links{
+				Self: "https://api.moltin.com/currencies/3563bde2-fb72-4721-8584-504058f63780",
+			},
+			Meta: epcc.CurrencyMeta{
+				Timestamps: epcc.Timestamps{
+					CreatedAt: "2020-09-01T15:39:18.273Z",
+					UpdatedAt: "2020-09-02T14:38:03.120282079Z",
+				},
+			},
+		},
+	}
+
+	smallUpdate := epcc.Currency{
+		Type:         "currency",
+		ExchangeRate: 1.14,
+	}
+
+	expectedSmallUpdateCurrencyData := epcc.CurrencyData{
+		Data: epcc.Currency{
+			ID:                "3563bde2-fb72-4721-8584-504058f63780",
+			Type:              "currency",
+			Code:              "EUR",
+			ExchangeRate:      1.14,
+			Format:            "€{price}",
+			DecimalPoint:      ".",
+			ThousandSeparator: ",",
+			DecimalPlaces:     2,
+			Default:           false,
+			Enabled:           true,
+			Links: epcc.Links{
+				Self: "https://api.moltin.com/currencies/3563bde2-fb72-4721-8584-504058f63780",
+			},
+			Meta: epcc.CurrencyMeta{
+				Timestamps: epcc.Timestamps{
+					CreatedAt: "2020-09-01T15:39:18.273Z",
+					UpdatedAt: "2020-09-02T14:38:03.120282079Z",
+				},
+			},
+		},
+	}
+
+	tests := []struct {
+		currencyID   string
+		update       epcc.Currency
+		currencyData *epcc.CurrencyData
+		err          error
+	}{
+		{"largeUpdate", largeUpdate, &expectedLargeUpdateCurrencyData, nil},
+		{"smallUpdate", smallUpdate, &expectedSmallUpdateCurrencyData, nil},
+	}
+
+	// Create a new client and configure it to use test server instead of the real API endpoint.
+	testServer := httptest.NewServer(http.HandlerFunc(fakeHandleCurrenciesUpdate))
+	options := epcc.ClientOptions{
+		BaseURL:           testServer.URL,
+		ClientTimeout:     10 * time.Second,
+		RetryLimitTimeout: 10 * time.Millisecond,
+	}
+	client := epcc.NewClient(options)
+
+	for _, test := range tests {
+		currencyData, err := epcc.Currencies.Update(client, test.currencyID, &test.update)
+		if currencyData != nil {
+			assert.Equal(t, test.currencyData, currencyData)
+		}
 		assert.Equal(t, test.err, err)
 	}
 }
