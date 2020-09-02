@@ -44,14 +44,12 @@ func (currencies) Create(client *Client, currency *Currency) (*CurrencyData, err
 	path := fmt.Sprintf("/v2/currencies")
 
 	body, err := client.DoRequest("POST", path, bytes.NewBuffer(jsonPayload))
-
 	if err != nil {
 		return nil, err
 	}
 
 	var newCurrency CurrencyData
-	err = json.Unmarshal(body, &newCurrency)
-	if err != nil {
+	if err := json.Unmarshal(body, &newCurrency); err != nil {
 		return nil, err
 	}
 
