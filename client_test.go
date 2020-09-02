@@ -17,7 +17,6 @@ func TestNewClient(t *testing.T) {
 }
 
 func TestAuthenticate(t *testing.T) {
-
 	testServer := httptest.NewServer(http.HandlerFunc(fakeHandleAuth))
 	options := ClientOptions{
 		BaseURL:           testServer.URL,

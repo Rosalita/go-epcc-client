@@ -9,7 +9,6 @@ import (
 )
 
 func TestSingleCurrencyDataUnmarshal(t *testing.T) {
-
 	rawJSON := `{` +
 		`"data":` +
 		`{` +
@@ -64,7 +63,6 @@ func TestSingleCurrencyDataUnmarshal(t *testing.T) {
 }
 
 func TestMultipleCurrenciesDataUnmarshal(t *testing.T) {
-
 	rawJSON := `{` +
 		`"data":[{` +
 		`"id":"9ea32a77-982b-41fd-873c-62570bbfc1e0",` +

@@ -14,7 +14,6 @@ import (
 )
 
 func fakeHandleCurrenciesGetAll(rw http.ResponseWriter, req *http.Request) {
-
 	switch {
 	case req.URL.String() == "/v2/currencies" && req.Method == "GET":
 
@@ -137,7 +136,6 @@ func TestCurrenciesGetAll(t *testing.T) {
 }
 
 func fakeHandleCurrenciesCreate(rw http.ResponseWriter, req *http.Request) {
-
 	var buffer bytes.Buffer
 	_, err := buffer.ReadFrom(req.Body)
 	if err != nil {
@@ -189,7 +187,6 @@ func fakeHandleCurrenciesCreate(rw http.ResponseWriter, req *http.Request) {
 }
 
 func TestCurrenciesCreate(t *testing.T) {
-
 	validNewCurrency := epcc.Currency{
 		Type:              "currency",
 		Code:              "INR",
@@ -261,6 +258,62 @@ func TestCurrenciesCreate(t *testing.T) {
 		if currencyData != nil {
 			assert.Equal(t, test.currencyData, currencyData)
 		}
+		assert.Equal(t, test.err, err)
+	}
+}
+
+func fakeHandleCurrenciesDelete(rw http.ResponseWriter, req *http.Request) {
+	switch {
+	case req.URL.String() == "/v2/currencies/validCurrencyID" && req.Method == "DELETE":
+		responseJSON := `{}`
+		rw.WriteHeader(204)
+		rw.Write([]byte(responseJSON))
+	case req.URL.String() == "/v2/currencies/notFound" && req.Method == "DELETE":
+		responseJSON := `{`+
+		`"errors":[{`+
+		`"status":404,`+
+		`"title":"Currency not found",`+
+		`"detail":"The requested currency could not be found"`+
+		`}]}`
+		rw.WriteHeader(404)
+		rw.Write([]byte(responseJSON))
+	case req.URL.String() == "/v2/currencies/defaultCurrency" && req.Method == "DELETE":
+		responseJSON := `{`+
+		`"errors":[{`+
+		`"status":400,`+
+		`"title":"Cannot delete default currency",`+
+		`"detail":"Make another currency default before removing"`+
+		`}]}`
+		rw.WriteHeader(404)
+		rw.Write([]byte(responseJSON))
+	default:
+		rw.WriteHeader(500)
+	}
+}
+
+
+func TestCurrenciesDelete(t *testing.T) {
+	tests := []struct {
+		currencyID string
+		err       error
+	}{
+		{"validCurrencyID", nil},
+		{"notFound", errors.New("status code 404 is not ok")},
+		{"defaultCurrency", errors.New("status code 404 is not ok")},
+	}
+
+	// Create a new client and configure it to use test server instead of the real API endpoint.
+	testServer := httptest.NewServer(http.HandlerFunc(fakeHandleCurrenciesDelete))
+
+	options := epcc.ClientOptions{
+		BaseURL:           testServer.URL,
+		ClientTimeout:     10 * time.Second,
+		RetryLimitTimeout: 10 * time.Millisecond,
+	}
+	client := epcc.NewClient(options)
+
+	for _, test := range tests {
+		err := epcc.Currencies.Delete(client, test.currencyID)
 		assert.Equal(t, test.err, err)
 	}
 }

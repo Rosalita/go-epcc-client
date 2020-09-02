@@ -13,7 +13,6 @@ var cfg Config
 
 // initialisation for the epcc package
 func init() {
-
 	// Set default configuration values.
 	cfg.BaseURL = "https://api.moltin.com/"
 	cfg.ClientTimeout = 10 * time.Second

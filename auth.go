@@ -20,7 +20,6 @@ type authResponse struct {
 
 //auth returns an AccessToken or an Error
 func auth(client Client) (string, error) {
-
 	reqURL, err := url.Parse(client.BaseURL)
 
 	reqURL.Path = fmt.Sprintf("/oauth/access_token")

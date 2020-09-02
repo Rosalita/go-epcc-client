@@ -13,7 +13,6 @@ type currencies struct{}
 
 // GetAll fetches all currencies
 func (currencies) GetAll(client *Client) (*CurrenciesData, error) {
-
 	path := fmt.Sprintf("/v2/currencies")
 
 	body, err := client.DoRequest("GET", path, nil)
@@ -31,7 +30,6 @@ func (currencies) GetAll(client *Client) (*CurrenciesData, error) {
 
 // Create creates a currency
 func (currencies) Create(client *Client, currency *Currency) (*CurrencyData, error) {
-
 	currencyData := CurrencyData{
 		Data: *currency,
 	}
@@ -54,4 +52,15 @@ func (currencies) Create(client *Client, currency *Currency) (*CurrencyData, err
 	}
 
 	return &newCurrency, nil
+}
+
+// Delete deletes a currency.
+func (currencies) Delete(client *Client, currencyID string) error {
+	path := fmt.Sprintf("/v2/currencies/%s", currencyID)
+
+	if _, err := client.DoRequest("DELETE", path, nil); err != nil {
+		return err
+	}
+
+	return nil
 }

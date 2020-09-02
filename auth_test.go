@@ -38,7 +38,6 @@ func fakeHandleAuth(rw http.ResponseWriter, req *http.Request) {
 }
 
 func TestAuth(t *testing.T) {
-
 	// Create a new client and configure it to use test server instead of the real API endpoint.
 	testServer := httptest.NewServer(http.HandlerFunc(fakeHandleAuth))
 	options := ClientOptions{

@@ -30,7 +30,6 @@ type ClientOptions struct {
 
 // NewClient creates a new instance of a Client.
 func NewClient(options ...ClientOptions) *Client {
-
 	exp := retry.Exponential{
 		Initial: 10 * time.Millisecond,
 		Factor:  1.5,
@@ -72,7 +71,6 @@ func NewClient(options ...ClientOptions) *Client {
 
 //Authenticate attempts to generate an access token and save it on the client.
 func (c *Client) Authenticate() error {
-
 	token, err := auth(*c)
 	if err != nil {
 		return err
@@ -84,7 +82,6 @@ func (c *Client) Authenticate() error {
 
 // DoRequest makes a html request to the EPCC API and handles the response.
 func (c *Client) DoRequest(method string, path string, payload io.Reader) (body []byte, err error) {
-
 	reqURL, err := url.Parse(c.BaseURL)
 	if err != nil {
 		return nil, err
