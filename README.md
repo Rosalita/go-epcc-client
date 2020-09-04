@@ -21,6 +21,26 @@ client := epcc.NewClient()
 client.Authenticate()
 ```
 
+# To configure a custom client
+```go
+clientOptions := epcc.ClientOptions{
+	BaseURL: "https://dev.moltin.com/",
+	ClientTimeout: 10 * time.Second,
+	RetryLimitTimeout: 20 * time.Second,
+}
+
+customClient := epcc.NewClient(clientOptions)
+customClient.Authenticate()
+```
+
+## Client Options
+* BaseURL - This is the baseURL that requests will be made to.
+* ClientTimeout - This is how long the client will wait for a response before timing out.
+* RetryLimitTimout - Requests will be retried for a maximum of the retryLimitTimeout when responses are received with status codes 429 (too many requests), 500, (internal server error) 503 (service unavailable) or 504 (Gateway Timeout)are received. 
+
+# Querying Endpoints
+
+## Currencies 
 Make a request to get a single currency
 ```go
 currency, err := epcc.Currencies.Get(client, "3563bde2-fb72-4721-8584-504058f63780")
@@ -63,19 +83,8 @@ Make a request to delete a currency
 err := epcc.Currencies.Delete(client, "8240bc0f-6e59-474e-a2fa-6813a0f1b713")
 ```
 
-# To configure a custom client
+## Products
+Make a request to get all products
 ```go
-clientOptions := epcc.ClientOptions{
-	BaseURL: "https://dev.moltin.com/",
-	ClientTimeout: 10 * time.Second,
-	RetryLimitTimeout: 20 * time.Second,
-}
-
-customClient := epcc.NewClient(clientOptions)
-customClient.Authenticate()
+products, err := epcc.Products.GetAll(client)
 ```
-
-## Client Options
-* BaseURL - This is the baseURL that requests will be made to.
-* ClientTimeout - This is how long the client will wait for a response before timing out.
-* RetryLimitTimout - Requests will be retried for a maximum of the retryLimitTimeout when responses are received with status codes 429 (too many requests), 500, (internal server error) 503 (service unavailable) or 504 (Gateway Timeout)are received. 

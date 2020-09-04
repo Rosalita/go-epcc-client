@@ -116,6 +116,7 @@ func (c *Client) DoRequest(method string, path string, payload io.Reader) (body 
 				return nil, err
 			}
 
+			fmt.Println(buffer.String())
 			return buffer.Bytes(), nil
 
 		case 204:
