@@ -12,19 +12,27 @@ type ProductsData struct {
 
 // Product represents a product
 type Product struct {
-	ID            string               `json:"id,omitempty"`
-	Type          string               `json:"type"`
-	Name          string               `json:"name"`
-	Slug          string               `json:"slug"`
-	SKU           string               `json:"sku"`
-	Description   string               `json:"description"`
-	ManageStock   bool                 `json:"manage_stock"`
-	Status        string               `json:"status"`
-	CommodityType string               `json:"commodity_type"`
-	Price         []ProductPrice       `json:"price"`
-	Meta          ProductMeta          `json:"meta,omitempty"`
-	Weight        ProductWeight        `json:"weight,omitempty"`
-	Relationships ProductRelationships `json:"relationships,omitempty"`
+	ID            string                 `json:"id,omitempty"`
+	Type          string                 `json:"type"`
+	Name          string                 `json:"name"`
+	Slug          string                 `json:"slug"`
+	SKU           string                 `json:"sku"`
+	Description   string                 `json:"description"`
+	ManageStock   bool                   `json:"manage_stock"`
+	Status        string                 `json:"status"`
+	CommodityType string                 `json:"commodity_type"`
+	Price         []ProductPrice         `json:"price"`
+	Meta          ProductMeta            `json:"meta,omitempty"`
+	Weight        *ProductWeight         `json:"weight,omitempty"`
+	Relationships ProductRelationships   `json:"relationships,omitempty"`
+	Dimensions    map[string]Measurement `json:"dimensions,omitempty"`
+}
+
+// Measurement represents a measurement
+type Measurement struct {
+	Measurement string  `json:"measurement"`
+	Unit        string  `json:"unit"`
+	Value       float64 `json:"value"`
 }
 
 // ProductPrice is a price for a Products meta
@@ -36,10 +44,17 @@ type ProductPrice struct {
 
 // ProductMeta contains extra data for a product
 type ProductMeta struct {
-	Timestamps Timestamps         `json:"timestamps,omitempty"`
-	Stock      ProductStock       `json:"stock"`
-	Variations []ProductVariation `json:"variations,omitempty"`
+	Timestamps      Timestamps             `json:"timestamps,omitempty"`
+	Stock           ProductStock           `json:"stock"`
+	Variations      []ProductVariation     `json:"variations,omitempty"`
+	VariationMatrix ProductVariationMatrix `json:"variation_matrix"`
 }
+
+//ProductVariationMatrix is a map of variationID's to VariationOptions and child product IDs
+type ProductVariationMatrix map[string]VariationOptionToChildProduct
+
+// VariationOptionToChildProduct is a map of variationOptionIDs to child productIDs
+type VariationOptionToChildProduct map[string]string
 
 // ProductVariation is a variation object for a ProductMeta
 type ProductVariation struct {
@@ -70,13 +85,14 @@ type ProductWeight struct {
 
 // ProductRelationships represents the relationships that can exist for a product
 type ProductRelationships struct {
-	Files RelationshipItems `json:"files,omitempty"`
-	Categories RelationshipItems `json:"categories,omitempty"`
-	Collections RelationshipItems  `json:"collections,omitempty"`
-	Brands RelationshipItems `json:"brands,omitempty"`
-	Variations RelationshipItems `json:"variations,omitempty"`
-	MainImage RelationshipItem `json:"main_image,omitempty"`
-	Parent RelationshipItem `json:"parent,omitempty"`
+	Files       RelationshipItems `json:"files,omitempty"`
+	Categories  RelationshipItems `json:"categories,omitempty"`
+	Collections RelationshipItems `json:"collections,omitempty"`
+	Brands      RelationshipItems `json:"brands,omitempty"`
+	Variations  RelationshipItems `json:"variations,omitempty"`
+	MainImage   RelationshipItem  `json:"main_image,omitempty"`
+	Parent      RelationshipItem  `json:"parent,omitempty"`
+	Children    RelationshipItems `json:"children,omitempty"`
 }
 
 // RelationshipItems holds multiple items of data about a relationship
@@ -90,7 +106,7 @@ type RelationshipItem struct {
 }
 
 // Relationship is a single item of information about a relationship
-type Relationship struct{
+type Relationship struct {
 	Type string `json:"type,omitempty"`
 	ID   string `json:"id,omitempty"`
 }

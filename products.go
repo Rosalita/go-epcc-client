@@ -1,6 +1,7 @@
 package epcc
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 )
@@ -25,4 +26,47 @@ func (products) GetAll(client *Client) (*ProductsData, error) {
 	}
 
 	return &products, nil
+}
+
+// Get fetches a single product
+func (products) Get(client *Client, productID string) (*ProductData, error) {
+	path := fmt.Sprintf("/v2/products/%s", productID)
+
+	body, err := client.DoRequest("GET", path, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var product ProductData
+	if err := json.Unmarshal(body, &product); err != nil {
+		return nil, err
+	}
+
+	return &product, nil
+}
+
+// Create creates a product
+func (products) Create(client *Client, product *Product) (*ProductData, error) {
+	productData := ProductData{
+		Data: *product,
+	}
+
+	jsonPayload, err := json.Marshal(productData)
+	if err != nil {
+		return nil, err
+	}
+
+	path := fmt.Sprintf("/v2/products")
+
+	body, err := client.DoRequest("POST", path, bytes.NewBuffer(jsonPayload))
+	if err != nil {
+		return nil, err
+	}
+
+	var newProduct ProductData
+	if err := json.Unmarshal(body, &newProduct); err != nil {
+		return nil, err
+	}
+
+	return &newProduct, nil
 }

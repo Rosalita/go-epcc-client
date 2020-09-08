@@ -288,7 +288,7 @@ func TestMultipleProductsDataUnmarshal(t *testing.T) {
 						Availability: "out-stock",
 					},
 				},
-				Weight: epcc.ProductWeight{
+				Weight: &epcc.ProductWeight{
 					Grams:     5,
 					Kilograms: 0.005,
 					Pounds:    0.01102,
@@ -346,7 +346,7 @@ func TestMultipleProductsDataUnmarshal(t *testing.T) {
 						Availability: "out-stock",
 					},
 				},
-				Weight: epcc.ProductWeight{
+				Weight: &epcc.ProductWeight{
 					Grams:     5,
 					Kilograms: 0.005,
 					Pounds:    0.01102,
@@ -430,7 +430,7 @@ func TestMultipleProductsDataUnmarshal(t *testing.T) {
 						},
 					},
 				},
-				Weight: epcc.ProductWeight{
+				Weight: &epcc.ProductWeight{
 					Grams:     5,
 					Kilograms: 0.005,
 					Pounds:    0.01102,
