@@ -650,3 +650,144 @@ func TestProductsCreate(t *testing.T) {
 		assert.Equal(t, test.err, err)
 	}
 }
+
+func fakeHandleProductsUpdate(rw http.ResponseWriter, req *http.Request) {
+	var buffer bytes.Buffer
+	_, err := buffer.ReadFrom(req.Body)
+	if err != nil {
+		rw.WriteHeader(500)
+		return
+	}
+
+	switch {
+	case req.URL.String() == "/v2/products/validProduct" && req.Method == "PUT" && strings.Contains(buffer.String(), `"id":"validProduct"`):
+		responseJSON := `{
+			"data": {
+				"type": "product",
+				"id": "64e4ce0d-c8d6-4c17-a929-de111ecc5140",
+				"name": "Origami Cat",
+				"slug": "origami-cat",
+				"sku": "origami-cat",
+				"manage_stock": false,
+				"description": "The Origami Cat is considered lucky.",
+				"price": [
+					{
+						"amount": 1,
+						"currency": "USD",
+						"includes_tax": false
+					}
+				],
+				"status": "draft",
+				"commodity_type": "physical",
+				"meta": {
+					"timestamps": {
+						"created_at": "2020-09-08T13:07:01+00:00",
+						"updated_at": "2020-09-08T13:07:01+00:00"
+					},
+					"stock": {
+						"level": 0,
+						"availability": "out-stock"
+					}
+				},
+				"relationships": {}
+			}
+		}`
+		rw.WriteHeader(200)
+		rw.Write([]byte(responseJSON))
+
+	default:
+		rw.WriteHeader(500)
+	}
+}
+
+func TestProductsUpdate(t *testing.T) {
+
+	validUpdate := epcc.Product{
+		ID:            "validProduct",
+		Type:          "product",
+		Name:          "Origami Cat",
+		Slug:          "origami-cat",
+		SKU:           "origami-cat",
+		Description:   "The Origami Cat is considered lucky.",
+		ManageStock:   false,
+		Status:        "draft",
+		CommodityType: "physical",
+		Price: []epcc.ProductPrice{
+			{
+				Amount:      1,
+				Currency:    "USD",
+				IncludesTax: false,
+			},
+		},
+	}
+
+	expectedValidResult := epcc.ProductData{
+		Data: epcc.Product{
+			ID:            "64e4ce0d-c8d6-4c17-a929-de111ecc5140",
+			Type:          "product",
+			Name:          "Origami Cat",
+			Slug:          "origami-cat",
+			SKU:           "origami-cat",
+			Description:   "The Origami Cat is considered lucky.",
+			ManageStock:   false,
+			Status:        "draft",
+			CommodityType: "physical",
+			Price: []epcc.ProductPrice{
+				{
+					Amount:      1,
+					Currency:    "USD",
+					IncludesTax: false,
+				},
+			},
+			Meta: epcc.ProductMeta{
+				Timestamps: epcc.Timestamps{
+					CreatedAt: "2020-09-08T13:07:01+00:00",
+					UpdatedAt: "2020-09-08T13:07:01+00:00"},
+				Stock: epcc.ProductStock{Level: 0, Availability: "out-stock"},
+			},
+		},
+	}
+
+	invalidUpdateMissingID := epcc.Product{
+		Type:          "product",
+		Name:          "Origami Cat",
+		Slug:          "origami-cat",
+		SKU:           "origami-cat",
+		Description:   "The Origami Cat is considered lucky.",
+		ManageStock:   false,
+		Status:        "draft",
+		CommodityType: "physical",
+		Price: []epcc.ProductPrice{
+			{
+				Amount:      1,
+				Currency:    "USD",
+				IncludesTax: false,
+			},
+		},
+	}
+	tests := []struct {
+		update      epcc.Product
+		productData *epcc.ProductData
+		err         error
+	}{
+		{validUpdate, &expectedValidResult, nil},
+		{invalidUpdateMissingID, nil, errors.New("error productID is required")},
+	}
+
+	// Create a new client and configure it to use test server instead of the real API endpoint.
+	testServer := httptest.NewServer(http.HandlerFunc(fakeHandleProductsUpdate))
+	options := epcc.ClientOptions{
+		BaseURL:           testServer.URL,
+		ClientTimeout:     10 * time.Second,
+		RetryLimitTimeout: 10 * time.Millisecond,
+	}
+	client := epcc.NewClient(options)
+
+	for _, test := range tests {
+		productData, err := epcc.Products.Update(client, &test.update)
+		if productData != nil {
+			assert.Equal(t, test.productData, productData)
+		}
+		assert.Equal(t, test.err, err)
+	}
+}

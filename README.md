@@ -116,3 +116,27 @@ newProduct := epcc.Product{
 
 result, err := epcc.Products.Create(client, &newProduct)
 ```
+
+Make a request to update a product
+```go
+update := epcc.Product{
+		ID: "64e4ce0d-c8d6-4c17-a929-de111ecc5140",
+		Type:          "product",
+		Name:          "Origami Cat",
+		Slug:          "origami-cat",
+		SKU:           "origami-cat",
+		Description:   "The Origami Cat is considered lucky.",
+		ManageStock:   false,
+		Status:        "draft",
+		CommodityType: "physical",
+		Price: []epcc.ProductPrice{
+			{
+				Amount:      1,
+				Currency:    "USD",
+				IncludesTax: false,
+			},
+		},
+	}
+	
+result, err := epcc.Products.Update(client, &update)
+```

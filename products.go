@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"errors"
 )
 
 // Products is used to access the Products endpoints.
@@ -47,6 +48,7 @@ func (products) Get(client *Client, productID string) (*ProductData, error) {
 
 // Create creates a product
 func (products) Create(client *Client, product *Product) (*ProductData, error) {
+
 	productData := ProductData{
 		Data: *product,
 	}
@@ -69,4 +71,35 @@ func (products) Create(client *Client, product *Product) (*ProductData, error) {
 	}
 
 	return &newProduct, nil
+}
+
+// Update updates a product.
+func (products) Update(client *Client, product *Product) (*ProductData, error) {
+
+	if product.ID == "" {
+		return nil, errors.New("error productID is required")
+	}
+
+	productData := ProductData{
+		Data: *product,
+	}
+
+	jsonPayload, err := json.Marshal(productData)
+	if err != nil {
+		return nil, err
+	}
+
+	path := fmt.Sprintf("/v2/products/%s", product.ID)
+
+	body, err := client.DoRequest("PUT", path, bytes.NewBuffer(jsonPayload))
+	if err != nil {
+		return nil, err
+	}
+
+	var updatedProduct ProductData
+	if err := json.Unmarshal(body, &updatedProduct); err != nil {
+		return nil, err
+	}
+
+	return &updatedProduct, nil
 }
